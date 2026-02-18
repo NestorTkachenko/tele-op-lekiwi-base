@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>aiortc Video and Data Channel</title>
+</head>
+<body>
+    <h1>WebRTC Video Stream & Data Channel</h1>
+    <video id="video" autoplay playsinline controls></video>
+    <button onclick="sendMessage()">Send 'ping' via Data Channel</button>
+    <p>Data channel messages will appear in the browser console and Python terminal.</p>
+
+    <script>
+        let pc = null;
+        let dataChannel = null;
+
+        async function connect() {
+            pc = new RTCPeerConnection();
+
+            // Handle incoming video stream
+            pc.ontrack = function (event) {
+                if (event.track.kind == "video") {
+                    document.getElementById("video").srcObject = event.streams[0];
+                }
+            };
+
+            // Create and handle data channel
+            dataChannel = pc.createDataChannel("chat");
+            dataChannel.onmessage = function (event) {
+                console.log("Message from Python:", event.data);
+            };
+            dataChannel.onopen = function () {
+                console.log("Data channel is open.");
+            };
+            dataChannel.onclose = function () {
+                console.log("Data channel is closed.");
+            };
+
+            // Create offer and send to Python server
+            const offer = await pc.createOffer();
+            await pc.setLocalDescription(offer);
+
+            const response = await fetch("/offer", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    sdp: pc.localDescription.sdp,
+                    type: pc.localDescription.type,
+                }),
+            });
+
+            const answer = await response.json();
+            await pc.setRemoteDescription(new RTCSessionDescription(answer));
+            console.log("Connection established.");
+        }
+
+        function sendMessage() {
+            if (dataChannel && dataChannel.readyState === "open") {
+                dataChannel.send("ping");
+            } else {
+                console.error("Data channel is not open.");
+            }
+        }
+
+        connect();
+    </script>
+</body>
+</html>
