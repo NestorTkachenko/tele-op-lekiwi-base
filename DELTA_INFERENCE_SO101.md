@@ -16,14 +16,15 @@ The script converts model output from delta joint actions to absolute joint targ
 
 ```bash
 python run_so101_delta_inference.py \
-  --policy-path <PATH_OR_HF_REPO_TO_TRAINED_POLICY> \
-  --dataset-repo-id nuffnuff/pi05pnptest_delta \
+  --policy-path nuffnuff/pi05pnpdelta \
+  --dataset.push_to_hub=False\
   --port /dev/ttyACM0 \
-  --wrist-cam-index 0 \
-  --context-cam-index 1 \
-  --inference-frames 20 \
+  --wrist-cam-index 2 \
+  --context-cam-index 0 \
+  --inference-frames 30 \
   --fps 10 \
-  --device cpu
+  --device cuda \
+  --dataset-repo-id nuffnuff/pi05pnptest_delta1
 ```
 
 If you are on GPU/MPS, change `--device` to `cuda` or `mps`.
