@@ -6,25 +6,35 @@ The script converts model output from delta joint actions to absolute joint targ
 
 `absolute_action = observation.state + predicted_delta_action`
 
-## Command (your requested setup)
-
-- Robot port: `/dev/ttyACM0`
-- Wrist camera index: `0`
-- Context (top) camera index: `1`
-- Inference frames: `20`
-- Training/inference FPS: `10`
+## Delta Inference Command
 
 ```bash
 python run_so101_delta_inference.py \
-  --policy-path nuffnuff/pi05pnpdelta \
-  --dataset.push_to_hub=False\
+  --policy-path <PATH_OR_HF_REPO_TO_TRAINED_DELTA_POLICY> \
+  --dataset-repo-id nuffnuff/pi05pnptest_delta \
   --port /dev/ttyACM0 \
-  --wrist-cam-index 2 \
-  --context-cam-index 0 \
-  --inference-frames 30 \
+  --wrist-cam-index 0 \
+  --context-cam-index 1 \
+  --inference-frames 20 \
   --fps 10 \
-  --device cuda \
-  --dataset-repo-id nuffnuff/pi05pnptest_delta1
+  --device cuda
 ```
 
-If you are on GPU/MPS, change `--device` to `cuda` or `mps`.
+## Smooth Pose Inference Command (Requested)
+
+```bash
+python run_pi05_pose_smooth_inference.py \
+  --policy-path nuffnuff/pi05pnpcorrect \
+  --dataset-repo-id <YOUR_POSE_DATASET_REPO> \
+  --port /dev/ttyACM0 \
+  --wrist-cam-index 0 \
+  --context-cam-index 2 \
+  --inference-hz 10 \
+  --control-hz 30 \
+  --camera-fps 30 \
+  --smoothing-alpha 0.35 \
+  --max-joint-step-deg 8 \
+  --device cuda
+```
+
+If you are on Apple Silicon, switch `--device` to `mps`.
